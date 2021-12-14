@@ -3,9 +3,10 @@ using Albina.BusinesLogic.Core.Interfaces;
 using Albina.BusinesLogic.Core.Models;
 using AutoMapper;
 using Bor.DataAccess.Core.Interfaces;
+using Bor.DataAccess.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Shareds.Exceptions;
-using System;
+using System; // Короче це код
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,9 +25,15 @@ namespace Albina.BusinesLogic.Services
             _context = context;
         }
 
-        public Task<UserInformationBlo> Auth(UserIdentityBlo userIdentityBlo)
+        public async Task<UserInformationBlo> Auth(UserIdentityBlo userIdentityBlo)
         {
-            throw new NotImplementedException();
+        UserRto user = await _context.Users.FirstOrDefaultAsync(x => x.Password == userIdentityBlo.Password && x.PhoneNumber == userIdentityBlo.Number);
+            if (user == null)
+                throw new NotFoundException("Неверный номер телефона или пароль");
+
+            return await ConvertToUserInformation(user);
+
+
         }
 
         public Task<bool> DoesExist(int numberPrefix, int number)
@@ -43,9 +50,21 @@ namespace Albina.BusinesLogic.Services
             return userInformationBlo;
         }
 
-        public Task<UserInformationBlo> Register(UserIdentityBlo userIdentityBlo)
+        public async Task<UserInformationBlo> Register(UserIdentityBlo userIdentityBlo)
         {
-            throw new NotImplementedException();
+            UserRto newUser = new UserRto()
+            {
+                PhoneNumberPrefix = userIdentityBlo.NumberPrefix,
+                PhoneNumber = userIdentityBlo.Number,
+                Password = userIdentityBlo.Password,
+            };
+            _context.Users.Add(newUser);
+
+            await _context.SaveChangesAsync();
+
+            UserInformationBlo userInformationBlo = await ConvertToUserInformation(newUser);
+
+            return userInformationBlo;
         }
 
         public Task<UserInformationBlo> Update(UserIdentityBlo userIdentityBlo, UserUpdateBlo userUpdateBlo)

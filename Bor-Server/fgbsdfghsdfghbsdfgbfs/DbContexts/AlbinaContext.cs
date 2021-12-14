@@ -2,6 +2,7 @@
 
 
 using Bor.DataAccess.Core.Interfaces;
+using Bor.DataAccess.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
